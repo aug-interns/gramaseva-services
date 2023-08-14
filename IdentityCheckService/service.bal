@@ -1,4 +1,9 @@
 import ballerina/http;
+import ballerinax/mongodb;
+
+//Database Connection
+configurable mongodb:ConnectionConfig mongoConfig = ?;
+mongodb:Client mongoClient = checkpanic new (mongoConfig);
 
 # A service representing a network-accessible API
 # bound to port `9090`.
