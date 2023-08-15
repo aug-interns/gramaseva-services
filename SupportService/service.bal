@@ -2,6 +2,7 @@ import ballerina/http;
 import ballerina/log;
 import SupportService.Types;
 import ballerinax/slack;
+import ballerina/time;
 
 configurable string slackAuthToken = ?;
 slack:ConnectionConfig slackConfig = {
@@ -21,7 +22,61 @@ service / on new http:Listener(9090) {
 
         slack:Message message = {
             channelName: "gramasevaka-supoort",
-            text: request.description
+            text: "",
+            blocks: [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "Support Ticket:\n*" + request.topic + "*"
+                    }
+                },
+                {
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "*Created:*\n " + time:utcToEmailString(request.createdAt)
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": "*NIC:*\n " + request.nic
+                        }
+                    ]
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*Description*:\n" + request.description
+                    }
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "emoji": true,
+                                "text": "Message"
+                            },
+                            "style": "primary",
+                            "value": "click_me_123"
+                        },
+                        {
+                            "type": "button",
+                            "text": {
+                                "type": "plain_text",
+                                "emoji": true,
+                                "text": "Discard"
+                            },
+                            "style": "danger",
+                            "value": "click_me_123"
+                        }
+                    ]
+                }
+            ]
         };
 
         string|error messageResponse = slackClient->postMessage(message);
