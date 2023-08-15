@@ -36,10 +36,6 @@ service / on new http:Listener(9090) {
                     "fields": [
                         {
                             "type": "mrkdwn",
-                            "text": "*Type:*\n" + request.supportType
-                        },
-                        {
-                            "type": "mrkdwn",
                             "text": "*Created:*\n " + time:utcToEmailString(request.createdAt)
                         },
                         {
