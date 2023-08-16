@@ -1,0 +1,2 @@
+### Get a specific user
+GET http://localhost:7070/AddressCheck/checkAddress/[string NIC]/[int no]/[string street]/[string village]/[string city]/[int postalcode]
