@@ -1,0 +1,2 @@
+### Get a specific user
+GET http://localhost:7070/police-check/api/status/200143678552
