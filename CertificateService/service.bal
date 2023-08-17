@@ -56,12 +56,31 @@ service / on new http:Listener(8080){
             allData[index] = data;
             index += 1;
             
-            io:println(data._id.counter);
             io:println(data.NIC);
             io:println(data.address);
             io:println(data.status);
             io:println(data.phone);
 
+        });
+
+        return allData;
+    }
+
+    //Get a specific record
+    resource function get getReqRecord/[string NIC]() returns requestData[]|error? {
+
+        map<json> queryString = {"NIC": NIC};
+        stream<requestData, error?> resultData = check mongoClient->find(collectionName = "Requests", filter = (queryString));
+        requestData[] allData = [];
+        int index = 0;
+        check resultData.forEach(function(requestData data) {
+            allData[index] = data;
+            index += 1;
+
+            io:println(data.NIC);
+            io:println(data.address);
+            io:println(data.status);
+            io:println(data.phone);
         });
 
         return allData;
