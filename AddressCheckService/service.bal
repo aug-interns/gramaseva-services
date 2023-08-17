@@ -20,7 +20,7 @@ mongodb:Client mongoClient = checkpanic new (mongoConfig);
     }
 }
 
-service /AddressCheck on new http:Listener(9090) {
+service / on new http:Listener(9090) {
 
     //Check for the given Address
     resource function get checkAddress/[string NIC]/[int no]/[string street]/[string village]/[string city]/[int postalcode]() returns boolean|InvalidNicError?|error? {

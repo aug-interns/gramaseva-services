@@ -9,9 +9,9 @@ mongodb:Client mongoClient = checkpanic new (mongoConfig);
 # A service representing a network-accessible API
 # bound to port `7070`.
 
-service /police\-check/api on new http:Listener(7070) {
+service / on new http:Listener(7070) {
 
-    resource function get status/[string NIC]() returns string|InvalidNicError?|error {
+    resource function get checkStatus/[string NIC]() returns string|InvalidNicError?|error {
         // Validate the NIC format using a regular expression
         string nicPattern = "^(\\d{9}[vVxX]|\\d{12})$"; // NIC pattern with or without 'v' or 'x'
         // Check if the NIC matches the pattern

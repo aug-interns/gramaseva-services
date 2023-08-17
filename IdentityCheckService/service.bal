@@ -19,7 +19,7 @@ mongodb:Client mongoClient = checkpanic new (mongoConfig);
     }
 }
 
-service /IdentityCheck on new http:Listener(9090) {
+service / on new http:Listener(9090) {
 
     //Check for the given NIC
     resource function get checkNIC/[string NIC]() returns boolean|InvalidNicError?|error? {
