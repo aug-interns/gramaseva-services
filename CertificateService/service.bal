@@ -1,6 +1,8 @@
 import ballerina/io;
 import ballerina/http;
+import ballerina/log;
 import ballerinax/mongodb;
+import CertificateService.Types;
 
 
 configurable mongodb:ConnectionConfig mongoConfig = ?;
@@ -17,28 +19,30 @@ type requestData record{
 };
 
 
-service /request on new http:Listener(8080){
+service / on new http:Listener(8080){
     //creating an entry for user requests
-    resource function post newRequestRecord/[string NIC]/[string no]/[string street]/[string village]/[string city]/[int postalcode]/[string phone]() returns boolean|error {
+    resource function post newRequestRecord(@http:Payload Types:CertificateRequest request) returns boolean|error {
+        log:printInfo(request.toJsonString());
 
-        json address = {
-            "no": no,
-            "street": street,
-            "village": village,
-            "city": city,
-            "postalcode": postalcode
+        map<json> doc = {
+            "NIC": request.NIC,
+            "address": {
+                "no": request.no,
+                "street": request.street,
+                "village": request.village,
+                "city": request.city,
+                "postalcode": request.postalcode
+            },
+            "status": "Pending",
+            "phone": request.phone
         };
 
-        map<json> doc = {"NIC": NIC, "address": address, "status": "Pending", "phone": phone};
-
-        error? resultData = check mongoClient->insert(doc, collectionName = "Requests");
-
-        if (resultData !is error) {
+        error? insertResult = check mongoClient->insert(doc, collectionName = "Requests");
+        if (insertResult !is error) {
             return true;
         }
         return false;
-
-    }
+     }
 
 
     //Get user requests from the database
@@ -51,7 +55,8 @@ service /request on new http:Listener(8080){
         check resultData.forEach(function(requestData data) {
             allData[index] = data;
             index += 1;
-
+            
+            io:println(data._id.counter);
             io:println(data.NIC);
             io:println(data.address);
             io:println(data.status);
