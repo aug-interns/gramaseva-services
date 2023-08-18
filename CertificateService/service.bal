@@ -33,7 +33,7 @@ service / on new http:Listener(8080){
                 "city": request.city,
                 "postalcode": request.postalcode
             },
-            "status": "Pending",
+            "status": "pending",
             "phone": request.phone
         };
 
