@@ -35,9 +35,9 @@ service / on new http:Listener(9090) {
                 "NIC": NIC,
                 "address": {
                     "no": no,
-                    "street": street,
-                    "village": village,
-                    "city": city,
+                    "street": street == () ? "" : (<string>street).toLowerAscii(),
+                    "village": village.toLowerAscii(),
+                    "city": city.toLowerAscii(),
                     "postalcode": postalcode
                 }
             };
