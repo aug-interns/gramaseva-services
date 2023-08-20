@@ -3,14 +3,25 @@ import ballerina/http;
 import ballerina/log;
 import ballerinax/mongodb;
 import CertificateService.Types;
-
+import ballerinax/twilio;
 
 configurable mongodb:ConnectionConfig mongoConfig = ?;
+
+configurable string twilioPhoneNumber = ?;
+configurable string accountSID = ?;
+configurable string authToken = ?;
+twilio:ConnectionConfig twilioConfig = {
+    twilioAuth: {
+        accountSId: accountSID,
+        authToken: authToken
+    }
+};
+
 //Create a new client
 mongodb:Client mongoClient = checkpanic new (mongoConfig);
+twilio:Client twilioClient = check new (twilioConfig);
 
-
-type requestData record{
+type requestData record {
     json _id;
     string NIC;
     map<json> address;
@@ -18,8 +29,7 @@ type requestData record{
     string phone;
 };
 
-
-service / on new http:Listener(8080){
+service / on new http:Listener(8080) {
     //creating an entry for user requests
     resource function post newRequestRecord(@http:Payload Types:CertificateRequest request) returns boolean|error {
         log:printInfo(request.toJsonString());
@@ -42,8 +52,7 @@ service / on new http:Listener(8080){
             return true;
         }
         return false;
-     }
-
+    }
 
     //Get user requests from the database
     resource function get getRequests() returns requestData[]|error {
@@ -55,7 +64,7 @@ service / on new http:Listener(8080){
         check resultData.forEach(function(requestData data) {
             allData[index] = data;
             index += 1;
-            
+
             io:println(data.NIC);
             io:println(data.address);
             io:println(data.status);
@@ -86,7 +95,6 @@ service / on new http:Listener(8080){
         return allData;
     }
 
-
     //Updating user request status
     resource function put updateRequest/[string NIC]/[string status]() returns int|error {
 
@@ -94,6 +102,25 @@ service / on new http:Listener(8080){
         map<json> filter = {"NIC": NIC};
 
         int|error resultData = check mongoClient->update(queryString, "Requests", filter = filter);
+
+        if (status == "completed") {
+            map<json> filter_query = {"NIC": NIC};
+            stream<requestData, error?> entry_details = checkpanic mongoClient->find(collectionName = "Requests", filter = filter_query, 'limit = 1);
+
+            string phone_number = "";
+            check entry_details.forEach(function(requestData entry) {
+                phone_number = entry.phone;
+            });
+
+            log:printInfo(phone_number.toJsonString());
+
+            twilio:SmsResponse|error smsResponse = twilioClient->sendSms(twilioPhoneNumber, phone_number, "your CertificateService request is completed");
+            if (smsResponse is error) {
+                log:printError(smsResponse.toString());
+            } else {
+                log:printInfo(smsResponse.toJsonString());
+            }
+        }
 
         return resultData;
     }
