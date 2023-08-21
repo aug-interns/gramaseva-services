@@ -324,6 +324,15 @@ modules = [
 
 [[package]]
 org = "ballerinax"
+name = "client.config"
+version = "1.0.1"
+dependencies = [
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "oauth2"}
+]
+
+[[package]]
+org = "ballerinax"
 name = "mongodb"
 version = "4.2.1"
 dependencies = [
@@ -332,6 +341,23 @@ dependencies = [
 ]
 modules = [
 	{org = "ballerinax", packageName = "mongodb", moduleName = "mongodb"}
+]
+
+[[package]]
+org = "ballerinax"
+name = "twilio"
+version = "3.2.0"
+dependencies = [
+	{org = "ballerina", name = "auth"},
+	{org = "ballerina", name = "http"},
+	{org = "ballerina", name = "log"},
+	{org = "ballerina", name = "mime"},
+	{org = "ballerina", name = "os"},
+	{org = "ballerina", name = "url"},
+	{org = "ballerinax", name = "client.config"}
+]
+modules = [
+	{org = "ballerinax", packageName = "twilio", moduleName = "twilio"}
 ]
 
 [[package]]
@@ -345,7 +371,8 @@ dependencies = [
 	{org = "ballerina", name = "test"},
 	{org = "ballerina", name = "uuid"},
 	{org = "ballerinai", name = "observe"},
-	{org = "ballerinax", name = "mongodb"}
+	{org = "ballerinax", name = "mongodb"},
+	{org = "ballerinax", name = "twilio"}
 ]
 modules = [
 	{org = "indrajithmadhumal", packageName = "CertificateService", moduleName = "CertificateService"},

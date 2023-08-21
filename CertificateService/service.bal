@@ -31,12 +31,32 @@ type requestData record {
     string id;
 };
 
+type requestCheck record {
+    string NIC;
+    string status;
+};
+
+type requestCompletedCheck record {
+    string id;
+    string status;
+    string NIC;
+};
+
+type requestCompletedData record{
+    string NIC;
+    string fullname;
+    map<json> address;
+    string DoB;
+    string criminalstatus;
+};
+
 service / on new http:Listener(8080) {
     //creating an entry for user requests
     resource function post newRequestRecord(@http:Payload Types:CertificateRequest request) returns string|error {
         log:printInfo(request.toJsonString());
 
         string uuidString = uuid:createType1AsString();
+        boolean valid = false;
 
         map<json> doc = {
             "NIC": request.NIC,
@@ -52,11 +72,25 @@ service / on new http:Listener(8080) {
             "id": uuidString
         };
 
-        error? insertResult = check mongoClient->insert(doc, collectionName = "Requests");
-        if (insertResult !is error) {
-            return uuidString;
+        map<json> queryString = {"NIC": request.NIC, "status": "pending"};
+        stream<requestCheck, error?> result = check mongoClient->find(collectionName = "Requests", filter = (queryString));
+        
+        check result.forEach(function(requestCheck datas) {
+            valid = true;
+        });
+
+        if (!valid){
+            error? insertResult = check mongoClient->insert(doc, collectionName = "Requests");
+            if (insertResult !is error) {
+                return uuidString;
+            }
+            else{
+                return "Request Failed!";
+            }
         }
-        return "Request Failed!";
+        else{
+            return "Request Failed!";
+        }    
     }
 
     //Get user requests from the database
@@ -70,6 +104,7 @@ service / on new http:Listener(8080) {
             allData[index] = data;
             index += 1;
 
+            io:println(data.id);
             io:println(data.NIC);
             io:println(data.address);
             io:println(data.status);
@@ -100,6 +135,42 @@ service / on new http:Listener(8080) {
         });
 
         return allData;
+    }
+
+    //get details of users
+    resource function get getCompletedReq/[string id]() returns json|error? {
+        boolean valid = false;
+        string nic ="";
+        map<json> queryString = {"id": id, "status": "completed"};
+        stream<requestCompletedCheck, error?> result = check mongoClient->find(collectionName = "Requests", filter = (queryString));
+        json[] allData = [];
+
+        check result.forEach(function(requestCompletedCheck datas) {
+            valid = true;
+            nic = datas.NIC;
+        });
+
+        if (valid){
+            map<json> queryString1 = {"NIC": nic};
+            stream<requestCompletedData, error?> resultData = check mongoClient->find(collectionName = "Police", filter = queryString1);
+            
+            check resultData.forEach(function(requestCompletedData data) {
+                json dataJson = {
+                "NIC": data.NIC,
+                "fullname": data.fullname,
+                "address": data.address,
+                "DoB": data.DoB,
+                "criminalstatus": data.criminalstatus
+            };
+            allData.push(dataJson);
+            });
+            json responseData = {"id": id, "data": allData[0]};
+
+            return responseData;
+        }
+        else{
+            return ();
+        }
     }
 
     //Updating user request status
