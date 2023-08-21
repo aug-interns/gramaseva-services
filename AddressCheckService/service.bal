@@ -23,7 +23,7 @@ mongodb:Client mongoClient = checkpanic new (mongoConfig);
 service / on new http:Listener(9090) {
 
     //Check for the given Address
-    resource function get checkAddress/[string NIC]/[int no]/[string street]/[string village]/[string city]/[int postalcode]() returns boolean|InvalidNicError?|error? {
+    resource function get checkAddress(string NIC, int no, string village, string city, int postalcode, string? street = " ") returns boolean|InvalidNicError?|error? {
         // Validate the NIC format using a regular expression
         string nicPattern = "^(\\d{9}[vVxX]|\\d{12})$"; // NIC pattern with or without 'v' or 'x'
         // Check if the NIC matches the pattern
@@ -35,9 +35,9 @@ service / on new http:Listener(9090) {
                 "NIC": NIC,
                 "address": {
                     "no": no,
-                    "street": street,
-                    "village": village,
-                    "city": city,
+                    "street": street == () ? "" : (<string>street).toLowerAscii(),
+                    "village": village.toLowerAscii(),
+                    "city": city.toLowerAscii(),
                     "postalcode": postalcode
                 }
             };

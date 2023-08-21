@@ -5,6 +5,5 @@ public type CertificateRequest record {|
     string village;
     string city;
     int postalcode;
-    string status;
     string phone;
 |};
