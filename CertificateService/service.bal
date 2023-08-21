@@ -52,7 +52,7 @@ type requestCompletedData record{
 
 service / on new http:Listener(8080) {
     //creating an entry for user requests
-    resource function post newRequestRecord(@http:Payload Types:CertificateRequest request) returns string|error {
+    resource function post newRequestRecord(@http:Payload Types:CertificateRequest request) returns string|http:Conflict & readonly|error {
         log:printInfo(request.toJsonString());
 
         string uuidString = uuid:createType1AsString();
@@ -85,11 +85,11 @@ service / on new http:Listener(8080) {
                 return uuidString;
             }
             else{
-                return "Request Failed!";
+                return http:CONFLICT;
             }
         }
         else{
-            return "Request Failed!";
+            return http:CONFLICT;
         }    
     }
 
