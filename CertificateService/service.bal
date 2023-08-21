@@ -50,9 +50,16 @@ type requestCompletedData record{
     string criminalstatus;
 };
 
+type RequestConflict record {|
+    *http:Conflict;
+    record {
+        string message;
+    } body;
+|};
+
 service / on new http:Listener(8080) {
     //creating an entry for user requests
-    resource function post newRequestRecord(@http:Payload Types:CertificateRequest request) returns string|http:Conflict|error {
+    resource function post newRequestRecord(@http:Payload Types:CertificateRequest request) returns string|RequestConflict|error {
         log:printInfo(request.toJsonString());
 
         string uuidString = uuid:createType1AsString();
@@ -85,11 +92,11 @@ service / on new http:Listener(8080) {
                 return uuidString;
             }
             else{
-                return http:CONFLICT;
+                return {body: { message: "Request already exists" }};
             }
         }
         else{
-            return http:CONFLICT;
+            return {body: { message: "Request already exists" }};
         }    
     }
 
