@@ -23,10 +23,11 @@ service / on new http:Listener(9090) {
         twilio:SmsResponse|error smsResponse = twilioClient->sendSms(twilioPhoneNumber, messageRequest.recipient, messageRequest.message);
         if (smsResponse is error) {
             log:printError(smsResponse.toString());
+            return smsResponse;
         } else {
             log:printInfo(smsResponse.toJsonString());
+            return smsResponse.toJsonString();
         }
-        return "success";
     }
 }
 

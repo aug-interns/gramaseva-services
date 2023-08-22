@@ -3,24 +3,16 @@ import ballerina/http;
 import ballerina/log;
 import ballerinax/mongodb;
 import CertificateService.Types;
-import ballerinax/twilio;
 import ballerina/uuid;
 
 configurable mongodb:ConnectionConfig mongoConfig = ?;
 
-configurable string twilioPhoneNumber = ?;
-configurable string accountSID = ?;
-configurable string authToken = ?;
-twilio:ConnectionConfig twilioConfig = {
-    twilioAuth: {
-        accountSId: accountSID,
-        authToken: authToken
-    }
-};
+configurable string messagingService = ?;
+
+http:Client messagingServiceClient = check new(messagingService);
 
 //Create a new client
 mongodb:Client mongoClient = checkpanic new (mongoConfig);
-twilio:Client twilioClient = check new (twilioConfig);
 
 type requestData record {
     json _id;
@@ -199,7 +191,11 @@ service / on new http:Listener(8080) {
 
             log:printInfo(phone_number.toJsonString());
 
-            twilio:SmsResponse|error smsResponse = twilioClient->sendSms(twilioPhoneNumber, phone_number, "your CertificateService request is completed");
+            string|error smsResponse = check messagingServiceClient->/message.post({
+                recipient: phone_number,
+                message: string `Your Certificate Request has been completed. Use the ID '${id}' to download the certificate.`
+            });
+
             if (smsResponse is error) {
                 log:printError(smsResponse.toString());
             } else {
